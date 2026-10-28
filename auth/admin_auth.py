@@ -6,8 +6,10 @@ from sqlalchemy import select
 from starlette_admin.auth import AdminUser, AuthProvider, LoginFailed
 
 from src.users import UserManager
-from src.users_db import User, async_session_maker
+from src.users_db import User
+from src.db import SessionLocal
 
+async_session_maker=SessionLocal
 
 class AdminAuthProvider(AuthProvider):
 
