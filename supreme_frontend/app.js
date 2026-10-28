@@ -294,6 +294,127 @@
     }
   }
 
+  
+function openContactForm() {
+  showContent('contact', 'contact', '', []);
+
+  const list = $('pageList');
+  if (!list) return;
+
+  const form = document.createElement('form');
+  form.className = 'contact-form';
+
+  const fields = [
+    {
+      name: 'first_name',
+      label: 'first name',
+      type: 'text',
+      placeholder: 'Your first name'
+    },
+    {
+      name: 'last_name',
+      label: 'last name',
+      type: 'text',
+      placeholder: 'Your last name'
+    },
+    {
+      name: 'your_email',
+      label: 'email',
+      type: 'email',
+      placeholder: 'you@example.com'
+    }
+  ];
+
+  fields.forEach((field) => {
+    const label = document.createElement('label');
+    label.className = 'contact-field';
+    label.textContent = field.label;
+
+    const input = document.createElement('input');
+    input.name = field.name;
+    input.type = field.type;
+    input.placeholder = field.placeholder;
+    input.required = true;
+    input.autocomplete =
+      field.name === 'your_email' ? 'email' : 'given-name';
+
+    label.appendChild(input);
+    form.appendChild(label);
+  });
+
+  const messageLabel = document.createElement('label');
+  messageLabel.className = 'contact-field';
+  messageLabel.textContent = 'message';
+
+  const message = document.createElement('textarea');
+  message.name = 'message';
+  message.placeholder = 'Write your message...';
+  message.rows = 6;
+  message.required = true;
+  message.maxLength = 5000;
+
+  messageLabel.appendChild(message);
+  form.appendChild(messageLabel);
+
+  const submit = document.createElement('button');
+  submit.type = 'submit';
+  submit.className = 'contact-submit';
+  submit.textContent = 'send message';
+  form.appendChild(submit);
+
+  const status = document.createElement('p');
+  status.className = 'contact-status';
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  form.appendChild(status);
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    if (!form.reportValidity()) return;
+
+    submit.disabled = true;
+    submit.textContent = 'sending...';
+    status.textContent = '';
+    status.className = 'contact-status';
+
+    const params = new URLSearchParams(
+      Object.fromEntries(new FormData(form).entries())
+    );
+
+    try {
+      const response = await fetch(
+        `${state.apiBase.replace(/\/+$/, '')}/contact?${params}`,
+        { method: 'POST' }
+      );
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const detail = Array.isArray(data.detail)
+          ? data.detail.map((item) => item.msg).join(', ')
+          : data.detail || data.message || `HTTP ${response.status}`;
+
+        throw new Error(detail);
+      }
+
+      status.textContent = 'Message sent successfully.';
+      status.classList.add('success');
+      form.reset();
+    } catch (error) {
+      status.textContent = `Could not send message: ${error.message}`;
+      status.classList.add('error');
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'send message';
+    }
+  });
+
+  list.appendChild(form);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+  
   // Sections
   async function openSection(section) {
     if (section === 'gallery') {
@@ -317,10 +438,13 @@
 
       return;
     }
-
-    if (section === 'about' || section === 'contact') {
+    if (section === 'contact'){
+      openContactForm();
+      return;
+    }
+    if (section === 'about') {
       try {
-        const data = await api(`/${section}`);
+        const data = await api(`/about`);
         const page = normalizePage(data);
 
         if (Array.isArray(data)) {
@@ -550,7 +674,7 @@
 
         if (id) {
           await api(
-            `/patch?page_id=${encodeURIComponent(id)}&${params.toString()}`,
+            `/update_page?page_id=${encodeURIComponent(id)}&${params.toString()}`,
             { method: 'PATCH' }
           );
 

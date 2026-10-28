@@ -4,23 +4,17 @@ from fastapi import Depends
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
+from starlette_admin.contrib.sqla import Admin, ModelView
 
-DATABASE_URL = "sqlite+aiosqlite:///./users.db"
+from src.db import Base, engine, SessionLocal, get_session
 
-
-class Base(DeclarativeBase):
-    pass
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
     pass
 
-
-engine = create_async_engine(DATABASE_URL)
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
-
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
+    async with SessionLocal() as session:
         yield session
 
 

@@ -230,3 +230,5 @@ pyrightconfig.json
 
 *.db
 *.sqlite3
+
+uploads/

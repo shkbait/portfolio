@@ -9,7 +9,6 @@ from sqlalchemy import select
 from src.users_db import User
 from src.schemas.page import AddPage_scheme,Page_scheme,Page_Update_scheme
 from src.schemas.photo import Photo_add_scheme,Photo_scheme,Photo_Update_scheme
-from src.database import new_session
 from src.model.pages import Page_Model
 from src.model.photos import Photos_model
 from src.photo_db import new_session as photo_session
@@ -24,6 +23,10 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
+
+from src.db import Base,engine, SessionLocal, get_session
+
+new_session=SessionLocal
 
 load_dotenv()
 SENDER_EMAIL=os.getenv("SENDER_EMAIL")

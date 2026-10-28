@@ -12,3 +12,7 @@ class GalleryView(ModelView):
 class UsersView(ModelView):
     fields=["email", "is_active", "is_superuser", "is_verified"]
     searchable_fields=("email", "is_active", "is_superuser", "is_verified")
+
+class ContactView(ModelView):
+    fields=["id", "first_name", "last_name", "your_email", "message"]
+    searchable_fields=("id", "first_name", "last_name", "your_email", "message")

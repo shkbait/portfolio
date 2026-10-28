@@ -1,7 +1,8 @@
 from typing import Optional
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
-from src.database import Base
+# from src.database import Base
+from src.db import Base
 
 class Page_Model(Base):
     __tablename__="pages"

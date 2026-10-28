@@ -3,6 +3,7 @@ import os
 from starlette_admin.contrib.sqla import Admin
 from src.model.pages import Page_Model
 from src.model.photos import Photos_model
+from src.model.contact import Contact_Model
 
 from dotenv import load_dotenv
 
@@ -10,7 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from auth.admin_auth import AdminAuthProvider
 
 from src.db import engine
-from auth.views import View, UsersView, GalleryView
+from auth.views import View, UsersView, GalleryView, ContactView
 from src.users_db import User
 
 load_dotenv()
@@ -30,6 +31,10 @@ def setup_admin(app):
         title="Portfolio Admin",
         secret_key=SESSION_SECRET,
         auth_provider=AdminAuthProvider(),
+    )
+
+    admin.add_view(
+        ContactView(Contact_Model, icon="fa fa-newspaper")
     )
 
     admin.add_view(

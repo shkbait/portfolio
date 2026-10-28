@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 from src.api.pages import public_router as pages_public_router
 from src.api.pages import admin_router as pages_admin_router
-from src.api.photos import router as photos_router
+from src.api.photos import public_router as gallery_public_router
+from src.api.photos import admin_router as galler_admin_router
 
 from src.users_db import User
 from src.schemas.users import UserCreate,UserRead,UserUpdate
@@ -14,7 +15,9 @@ main_router.include_router(pages_admin_router)
 
 main_router.include_router(pages_public_router)
 
-main_router.include_router(photos_router)
+main_router.include_router(galler_admin_router)
+
+main_router.include_router(gallery_public_router)
 
 main_router.include_router(fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags = ["auth"])
 

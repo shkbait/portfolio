@@ -6,31 +6,33 @@ from src.api import router
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from src.schemas.photo import Photo_add_scheme,Photo_scheme,Photo_Update_scheme
 
-from src.users import current_active_user
+from src.users import current_active_user,current_superuser
 
-router=APIRouter(
+admin_router=APIRouter(
     prefix="/gallery",
-    dependencies=[Depends(current_active_user)]
+    dependencies=[Depends(current_superuser)]
 )
 
-@router.post("/upload_photo", tags=["gallery"])
+public_router=APIRouter()
+
+@admin_router.post("/upload_photo", tags=["gallery"])
 async def upload_photo(data: Annotated[Photo_add_scheme,Depends()], file: UploadFile=File(...)):
     photo_id=await PagesRepo.upload_photo(data,file)
     return {"ok": True, "photo_id": photo_id}
 
-@router.get("/get_photos", tags=["gallery"])
+@public_router.get("/get_photos", tags=["gallery"])
 async def get_photos(pagination: PaginationDep)->list[Photo_scheme]:
     photos=await PagesRepo.get_photo()
     return photos[pagination.offset : pagination.offset + pagination.limit]
 
-@router.get("/current_photo", tags=["gallery"])
+@public_router.get("/current_photo", tags=["gallery"])
 async def get_photos_by_id(photo_id: int):
     photos=await PagesRepo.get_one_photo(photo_id)
     return photos
 
 
 
-@router.patch("/update_photo", tags=["gallery"])
+@admin_router.patch("/update_photo", tags=["gallery"])
 async def update_photo(photo_id: int, data: Annotated[Photo_Update_scheme,Depends()], file: UploadFile)->Photo_scheme:
     result=await PagesRepo.update_photo(photo_id, data, file)
     if result is None:
@@ -46,7 +48,7 @@ async def update_photo(photo_id: int, data: Annotated[Photo_Update_scheme,Depend
             # await session.commit()
             # return True
 
-@router.delete("/delete_photo", tags=["gallery"])
+@admin_router.delete("/delete_photo", tags=["gallery"])
 async def delete_photo(photo_id:int):
     deleted=await PagesRepo.delete_photo(photo_id)
     if not deleted:

@@ -1,7 +1,8 @@
-from src.contact_db import EmailBase 
+# from src.contact_db import EmailBase 
+from src.db import Base
 from sqlalchemy.orm import Mapped,mapped_column
 
-class Contact_Model(EmailBase):
+class Contact_Model(Base):
     __tablename__="contact"
     id: Mapped[int]=mapped_column(primary_key=True)
     first_name: Mapped[str]

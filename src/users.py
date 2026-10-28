@@ -31,9 +31,11 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         print(f"User {user.id} has forgot their password. Reset token: {token}")
 
     async def on_after_request_verify(self, user: User, token: str, request: Request | None = None):
-        verify_url = f"http://127.0.0{token}"
-        email_body = f"Для подтверждения почты перейдите по ссылке: {verify_url}"
-
+        verify_url = "http://127.0.0.1:5500/verify.html"
+        email_body = (
+            f"Для подтверждения почты откройте страницу: {verify_url}\n"
+            f"Токен подтверждения: {token}"
+        )
         if request and "background_tasks" in request.scope:
             bg_tasks = request.scope["background_tasks"]
 
@@ -45,7 +47,11 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
             )
         else:
-            await email_auth(to_email=user.email, subject="Подтверждение почты", body=email_body)
+            email_auth(
+                to_email=user.email,
+                subject="Подтверждение почты",
+                body=email_body,
+            )
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
     yield UserManager(user_db)

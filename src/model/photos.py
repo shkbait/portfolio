@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String
-from src.photo_db import Base
+# from src.photo_db import Base
+from src.db import Base
 
 class Photos_model(Base):
     __tablename__="photos"
