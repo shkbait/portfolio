@@ -23,11 +23,15 @@ async def upload_photo(data: Annotated[Photo_add_scheme,Depends()], file: Upload
 @public_router.get("/get_photos", tags=["gallery"])
 async def get_photos(pagination: PaginationDep)->list[Photo_scheme]:
     photos=await PagesRepo.get_photo()
+    if photos is None:
+        raise HTTPException(status_code=404, detail="Photo not found")
     return photos[pagination.offset : pagination.offset + pagination.limit]
 
 @public_router.get("/current_photo", tags=["gallery"])
 async def get_photos_by_id(photo_id: int):
     photos=await PagesRepo.get_one_photo(photo_id)
+    if photos is None:
+        raise HTTPException(status_code=404, detail="Photo not found")
     return photos
 
 

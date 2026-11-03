@@ -191,6 +191,7 @@ class PagesRepo:
     @classmethod
     async def get_page(cls, page_id: int):
         async with new_session() as session:
+            # session.expire_all()
             query= select(Page_Model).where(Page_Model.id==page_id)
             result = await session.execute(query)
             page_model=result.scalars().one_or_none()
@@ -199,7 +200,7 @@ class PagesRepo:
             return Page_scheme.model_validate(page_model, from_attributes=True)
 
     @classmethod
-    async def get_current_page(cls, page_id: int, title: str | None, main_text: str | None)->list[Page_scheme]:
+    async def get_current_page(cls, page_id: int, title: str | None, main_text: str | None, tags: str, desc_find: bool, asc_find: bool)->list[Page_scheme]:
         async with new_session() as session:
             query = select(Page_Model)
             if page_id is not None:
@@ -208,6 +209,12 @@ class PagesRepo:
                 query=query.where(Page_Model.title.ilike(f"%{title}%"))
             if main_text is not None:
                 query=query.where(Page_Model.main_text.ilike(f"%{main_text}%"))
+            if tags is not None:
+                query=query.where(Page_Model.tags.ilike(f"%{tags}%"))
+            if desc_find is True:
+                query=query.order_by(Page_Model.created_at.desc())
+            if asc_find is True:
+                query=query.order_by(Page_Model.created_at.asc())
             result = await session.execute(query)
             page_models= result.scalars().all()
             return [Page_scheme.model_validate(page, from_attributes=True)

@@ -53,6 +53,8 @@ async def setup_database():
 
 @admin_router.post("/add_page", tags=["pages"])
 async def add_page(data: Annotated[AddPage_scheme,Depends()])->dict:
+    if not data.title.strip():
+        raise HTTPException(status_code=422, detail="Title cannot be empty")
     page_id=await PagesRepo.add_page(data)
     return {"ok": True, "page_id": page_id}
 
@@ -61,21 +63,23 @@ async def upload_picture(page_id:int, file: UploadFile):
     if file.filename is None:
         raise HTTPException(status_code=400)
     
-    page=await PagesRepo.upload_picture(page_id,file)
+    page = await PagesRepo.upload_picture(page_id,file)
     if page is None:
         raise HTTPException(status_code=404)
     return {"ok": True}
 
 @admin_router.delete("/delete_page", tags=["pages"])
 async def delete_page(page_id:int):
-    deleted=await PagesRepo.delete_page(page_id)
+    deleted = await PagesRepo.delete_page(page_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Page not Found")
     return {"ok":True}
 
 @public_router.get("/get_page", tags=["pages"])
 async def get_page(page_id: int):
-    page= await PagesRepo.get_page(page_id)
+    page = await PagesRepo.get_page(page_id)
+    if page is None:
+        raise HTTPException(status_code=404, detail="Page not found")
     return page
 
 @public_router.get("/get_current", tags=["pages"])
@@ -83,9 +87,12 @@ async def get_current(
     pagination: PaginationDep,
     page_id: int | None = None,
     title: str | None = None,
-    main_text: str | None=None
+    main_text: str | None=None,
+    tags: str | None = None,
+    desc_find: bool = False,
+    asc_find: bool = False
 )->list[Page_scheme]:
-    result = await PagesRepo.get_current_page(page_id, title, main_text)
+    result = await PagesRepo.get_current_page(page_id, title, main_text, tags, desc_find, asc_find)
     return result[pagination.offset : pagination.offset + pagination.limit]
 
 @public_router.get("/about")
