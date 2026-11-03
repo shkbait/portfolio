@@ -9,6 +9,8 @@ from src.users import UserManager
 from src.users_db import User
 from src.db import SessionLocal
 
+from src.users_db import UserRole
+
 async_session_maker=SessionLocal
 
 class AdminAuthProvider(AuthProvider):
@@ -26,7 +28,10 @@ class AdminAuthProvider(AuthProvider):
             )
             user = result.scalar_one_or_none()
 
-            if user is None or not user.is_active or not user.is_superuser:
+            if user is None or not user.is_active: #or not user.is_superuser:
+                raise LoginFailed("Неверный логин или пароль")
+
+            if not user.is_superuser and user.role not in [UserRole.ADMIN, UserRole.MANAGER]:
                 raise LoginFailed("Неверный логин или пароль")
 
             from fastapi_users.db import SQLAlchemyUserDatabase
@@ -62,11 +67,19 @@ class AdminAuthProvider(AuthProvider):
             )
             user = result.scalar_one_or_none()
 
-            if user is None or not user.is_active or not user.is_superuser:
+            if user is None or not user.is_active: #or not user.is_superuser:
+                request.session.clear()
+                return None
+            if not user.is_superuser and user.role not in [UserRole.ADMIN, UserRole.MANAGER]: #and user.role not in ["ADMIN", "MANAGER"]:
                 request.session.clear()
                 return None
 
-            return AdminUser(username=user.email)
+            user_roles= ["superuser"] if user.is_superuser else [user.role.value.lower()]
+
+            admin_user = AdminUser(username=user.email)
+            admin_user.roles = user_roles
+
+            return admin_user
 
     async def logout(self, request: Request) -> None:
         request.session.clear()
